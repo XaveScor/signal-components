@@ -1,0 +1,56 @@
+import { describe, test, expect, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { declareComponent } from "./index";
+import { atom } from "@reatom/core";
+import { customRender } from "./test-utils";
+
+describe("declare component", () => {
+  test("simple render", () => {
+    const Component = declareComponent<{ x: number }>(({ x }) => {
+      const y = atom((ctx) => ctx.spy(x) + 1);
+
+      return (ctx) => {
+        return <div>{ctx.spy(y)}</div>;
+      };
+    });
+
+    customRender(<Component x={1} />);
+
+    expect(screen.queryByText("2")).toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
+
+  test("change prop", () => {
+    const Component = declareComponent<{ x: number }>(({ x }) => {
+      const y = atom((ctx) => ctx.spy(x) + 1);
+
+      return (ctx) => {
+        return <div>{ctx.spy(y)}</div>;
+      };
+    });
+
+    const { rendered } = customRender(<Component x={1} />);
+
+    expect(screen.queryByText("2")).toBeInTheDocument();
+
+    rendered.rerender(<Component x={2} />);
+    expect(screen.queryByText("3")).toBeInTheDocument();
+  });
+
+  test("change don't execute init phase", () => {
+    const count = vi.fn();
+    const Component = declareComponent<{ x: number }>(({ x }) => {
+      count();
+      return (ctx) => {
+        return <div>{ctx.spy(x)}</div>;
+      };
+    });
+
+    const { rendered } = customRender(<Component x={1} />);
+    expect(count).toHaveBeenCalledTimes(2);
+    rendered.rerender(<Component x={2} />);
+    expect(count).toHaveBeenCalledTimes(2);
+    rendered.rerender(<Component x={3} />);
+    expect(count).toHaveBeenCalledTimes(2);
+  });
+});
