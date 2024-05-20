@@ -111,21 +111,87 @@ describe("declare component", () => {
     });
   });
 
-  test("change don't execute init phase", () => {
-    const count = vi.fn();
-    const Component = declareComponent<{ x: number }>(({ x }) => {
-      count();
-      return (ctx) => {
-        return <div>{ctx.spy(x)}</div>;
-      };
+  describe("rerender", () => {
+    describe("init phase", () => {
+      test("once(twice because of strictMode)", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          count();
+          return (ctx) => {
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(2);
+        rendered.rerender(<Component x={2} />);
+        expect(count).toHaveBeenCalledTimes(2);
+        rendered.rerender(<Component x={3} />);
+        expect(count).toHaveBeenCalledTimes(2);
+      });
     });
 
-    const { rendered } = customRender(<Component x={1} />);
-    expect(count).toHaveBeenCalledTimes(2);
-    rendered.rerender(<Component x={2} />);
-    expect(count).toHaveBeenCalledTimes(2);
-    rendered.rerender(<Component x={3} />);
-    expect(count).toHaveBeenCalledTimes(2);
+    describe("react phase", () => {
+      test("primitive => primitive", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return (ctx) => {
+            count();
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(1);
+        rendered.rerender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(1);
+      });
+
+      test("primitive => atom", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return (ctx) => {
+            count();
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(1);
+        rendered.rerender(<Component x={atom(1)} />);
+        expect(count).toHaveBeenCalledTimes(1);
+      });
+
+      test("atom => atom", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return (ctx) => {
+            count();
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={atom(1)} />);
+        expect(count).toHaveBeenCalledTimes(1);
+        rendered.rerender(<Component x={atom(1)} />);
+        expect(count).toHaveBeenCalledTimes(1);
+      });
+
+      test("atom => primitive", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return (ctx) => {
+            count();
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={atom(1)} />);
+        expect(count).toHaveBeenCalledTimes(1);
+        rendered.rerender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 
   test("optional props", () => {
