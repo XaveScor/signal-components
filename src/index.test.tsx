@@ -115,6 +115,38 @@ describe("declare component", () => {
   });
 
   describe("rerender", () => {
+    describe("parent => child", () => {
+      test("change prop in parent should rerender only child react phase", () => {
+        const initChild = vi.fn();
+        const Child = declareComponent<{ x: number }>(({ x }) => {
+          initChild();
+          return (ctx) => {
+            return <div>{ctx.spy(x)}</div>;
+          };
+        });
+
+        const initParent = vi.fn();
+        const renderParent = vi.fn();
+        const Parent = declareComponent<{ x: number }>(({ x }) => {
+          initParent();
+          return (ctx) => {
+            renderParent();
+            return <Child x={x} />;
+          };
+        });
+
+        const { rendered } = customRender(<Parent x={1} />);
+        expect(initParent).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(initChild).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(renderParent).toHaveBeenCalledTimes(StrictModePenalty * 1);
+
+        rendered.rerender(<Parent x={2} />);
+        expect(initParent).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(initChild).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(renderParent).toHaveBeenCalledTimes(StrictModePenalty * 1);
+      });
+    });
+
     describe("init phase", () => {
       test("once(twice because of strictMode)", () => {
         const count = vi.fn();
