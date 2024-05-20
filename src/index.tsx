@@ -22,9 +22,15 @@ type OutsideProps<Props> = {
 };
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 
-type RenderF = (ctx: CtxSpy) => React.ReactElement;
-
-type Component<Props> = (props: InsideProps<Props>) => RenderF;
+type RenderArg = {
+  ctx: CtxSpy;
+};
+type RenderF = (arg: RenderArg) => React.ReactElement;
+type ComponentArg<Props> = {};
+type Component<Props> = (
+  props: InsideProps<Props>,
+  arg: ComponentArg<Props>,
+) => RenderF;
 
 type UnsubscribeFn = () => void;
 const emptyUnsubscribe: UnsubscribeFn = () => {};
@@ -94,11 +100,11 @@ export function declareComponent<Props>(
     setProps(props);
 
     const wrapped = React.useMemo(() => {
-      return component(insideProps);
+      return component(insideProps, {});
     }, []);
 
     const Component = React.useMemo(() => {
-      return React.memo(reatomComponent(({ ctx }) => wrapped(ctx)));
+      return React.memo(reatomComponent(({ ctx }) => wrapped({ ctx })));
     }, []);
 
     return <Component />;
