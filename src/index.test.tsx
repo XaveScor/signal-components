@@ -1,5 +1,5 @@
 import { describe, test, expect, vi } from "vitest";
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { declareComponent } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
@@ -68,9 +68,9 @@ describe("declare component", () => {
 
     test("atom + change value", async () => {
       const a = atom(1);
-      const { rendered, ctx } = customRender(<Component x={a} />);
+      const { ctx } = customRender(<Component x={a} />);
       expect(screen.queryByText("2")).toBeInTheDocument();
-      await ctx.schedule(() => a(ctx, 2));
+      await act(() => ctx.schedule(() => act(() => a(ctx, 2))));
       expect(screen.queryByText("3")).toBeInTheDocument();
     });
 
@@ -82,7 +82,7 @@ describe("declare component", () => {
       const a = atom(2);
       rendered.rerender(<Component x={a} />);
       expect(screen.queryByText("3")).toBeInTheDocument();
-      await ctx.schedule(() => a(ctx, 4));
+      await act(() => ctx.schedule(() => a(ctx, 4)));
       expect(screen.queryByText("5")).toBeInTheDocument();
     });
 
@@ -145,9 +145,9 @@ describe("declare component", () => {
         });
 
         const { rendered } = customRender(<Component x={1} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={1} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
 
       test("primitive => atom", () => {
@@ -160,9 +160,9 @@ describe("declare component", () => {
         });
 
         const { rendered } = customRender(<Component x={1} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={atom(1)} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
 
       test("atom => atom", () => {
@@ -175,9 +175,9 @@ describe("declare component", () => {
         });
 
         const { rendered } = customRender(<Component x={atom(1)} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={atom(1)} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
 
       test("atom => primitive", () => {
@@ -190,9 +190,9 @@ describe("declare component", () => {
         });
 
         const { rendered } = customRender(<Component x={atom(1)} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={1} />);
-        expect(count).toHaveBeenCalledTimes(1);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
     });
   });

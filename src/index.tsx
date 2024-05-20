@@ -98,13 +98,7 @@ export function declareComponent<Props>(
     }, []);
 
     const Component = React.useMemo(() => {
-      const renderAtom = atom((ctx) => wrapped(ctx));
-      return React.memo(
-        reatomComponent(() => {
-          const [component] = useAtom(renderAtom);
-          return component;
-        }),
-      );
+      return React.memo(reatomComponent(({ ctx }) => wrapped(ctx)));
     }, []);
 
     return <Component />;
