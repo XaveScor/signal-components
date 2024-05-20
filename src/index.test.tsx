@@ -4,6 +4,9 @@ import { declareComponent } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
 
+// React recreate useMemo twice on mount in StrictMode
+const StrictModePenalty = 2;
+
 describe("declare component", () => {
   describe("prop", () => {
     const Component = declareComponent<{ x: number }>(({ x }) => {
@@ -123,11 +126,11 @@ describe("declare component", () => {
         });
 
         const { rendered } = customRender(<Component x={1} />);
-        expect(count).toHaveBeenCalledTimes(2);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={2} />);
-        expect(count).toHaveBeenCalledTimes(2);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         rendered.rerender(<Component x={3} />);
-        expect(count).toHaveBeenCalledTimes(2);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
     });
 
