@@ -38,8 +38,8 @@ describe("declare component", () => {
   });
 
   describe("change prop", () => {
-    const Component = declareComponent<{ x: number }>(({ x }) => {
-      const y = atom((ctx) => ctx.spy(x) + 1);
+    const Component = declareComponent<{ x?: number }>(({ x }) => {
+      const y = atom((ctx) => (ctx.spy(x) ?? 0) + 1);
 
       return (ctx) => {
         return <div>{ctx.spy(y)}</div>;
@@ -80,6 +80,24 @@ describe("declare component", () => {
 
       rendered.rerender(<Component x={2} />);
       expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("atom => undefined", () => {
+      const { rendered } = customRender(<Component x={atom(1)} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      rendered.rerender(<Component />);
+      expect(screen.queryByText("1")).toBeInTheDocument();
+    });
+
+    test("primitive => undefined", () => {
+      const { rendered } = customRender(<Component x={1} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      rendered.rerender(<Component />);
+      expect(screen.queryByText("1")).toBeInTheDocument();
     });
   });
 
