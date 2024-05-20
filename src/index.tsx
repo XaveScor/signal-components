@@ -1,11 +1,19 @@
 import React from "react";
-import { Atom, CtxSpy, AtomState, atom, isAtom, Ctx } from "@reatom/core";
+import {
+  Atom,
+  CtxSpy,
+  AtomState,
+  atom,
+  isAtom,
+  Ctx,
+  AtomMut,
+} from "@reatom/core";
 import { reatomComponent, useAtom, useCtx } from "@reatom/npm-react";
 
 type ConvertToAtom<T> = T extends Atom ? T : Atom<T>;
-type InsideProps<Props> = {
-  [K in keyof Props]: ConvertToAtom<Props[K]>;
-};
+type InsideProps<Props> = Required<{
+  [K in keyof Props]: NonNullable<ConvertToAtom<Props[K]>>;
+}>;
 
 type OutsideProps<Props> = {
   [K in keyof Props]:
@@ -25,33 +33,53 @@ function unwrapValue<T>(ctx: Ctx, value: Atom<T> | T) {
   return value;
 }
 
+type PropsProxy<T> = {
+  insideProps: InsideProps<T>;
+  setProps: (props: OutsideProps<T>) => void;
+};
+function createPropsProxy<Props>(ctx: Ctx): PropsProxy<Props> {
+  const propsMap = new Map<string, AtomMut>();
+  let outsideProps = {} as OutsideProps<Props>;
+  return {
+    insideProps: new Proxy({} as InsideProps<Props>, {
+      get(target: InsideProps<Props>, p: string, receiver: any) {
+        if (propsMap.has(p)) {
+          return propsMap.get(p);
+        }
+        // @ts-ignore
+        const outsideValue = outsideProps[p];
+        const a = atom(unwrapValue(ctx, outsideValue));
+        propsMap.set(p, a);
+        return a;
+      },
+    }),
+    setProps: (props) => {
+      outsideProps = props;
+      for (const [propName, propValue] of propsMap) {
+        // @ts-ignore
+        const outsideValue = props[propName];
+        if (ctx.get(propValue) !== unwrapValue(ctx, outsideValue)) {
+          propValue(ctx, unwrapValue(ctx, outsideValue));
+        }
+      }
+    },
+  };
+}
+
 export function declareComponent<Props>(
   component: Component<Props>,
 ): ReturnComponent<Props> {
   // @ts-ignore TODO: implement ref support later
   return (props: OutsideProps<Props>) => {
-    const propsObj: InsideProps<Props> = React.useMemo(() => {
-      // @ts-ignore
-      const res: InsideProps<Props> = {};
-      for (const propName of Object.keys(props)) {
-        // @ts-ignore
-        res[propName] = atom(null);
-      }
-      return res;
-    }, []);
     const ctx = useCtx();
-    for (const [propName, propValue] of Object.entries(props)) {
-      const outsideValue = unwrapValue(ctx, propValue);
-      // @ts-ignore
-      const insideAtom = propsObj[propName];
-
-      if (ctx.get(insideAtom) !== outsideValue) {
-        insideAtom(ctx, outsideValue);
-      }
-    }
+    const { insideProps, setProps } = React.useMemo(
+      () => createPropsProxy<Props>(ctx),
+      [],
+    );
+    setProps(props);
 
     const wrapped = React.useMemo(() => {
-      return component(propsObj);
+      return component(insideProps);
     }, []);
 
     const Component = React.useMemo(() => {

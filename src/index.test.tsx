@@ -53,4 +53,23 @@ describe("declare component", () => {
     rendered.rerender(<Component x={3} />);
     expect(count).toHaveBeenCalledTimes(2);
   });
+
+  test("optional props", () => {
+    const Component = declareComponent<{ x?: number }>(({ x }) => {
+      const y = atom((ctx) =>
+        ctx.spy(x) !== undefined ? "defined1" : "undefined2",
+      );
+
+      return (ctx) => {
+        return <div>{ctx.spy(y)}</div>;
+      };
+    });
+
+    const { rendered } = customRender(<Component />);
+
+    expect(screen.queryByText("undefined2")).toBeInTheDocument();
+
+    rendered.rerender(<Component x={2} />);
+    expect(screen.queryByText("defined1")).toBeInTheDocument();
+  });
 });
