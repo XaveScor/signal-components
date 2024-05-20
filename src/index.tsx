@@ -26,41 +26,56 @@ type RenderF = (ctx: CtxSpy) => React.ReactElement;
 
 type Component<Props> = (props: InsideProps<Props>) => RenderF;
 
-function unwrapValue<T>(ctx: Ctx, value: Atom<T> | T) {
+type UnsubscribeFn = () => void;
+const emptyUnsubscribe: UnsubscribeFn = () => {};
+function setAtomValue<T>(
+  ctx: Ctx,
+  atom: AtomMut<T>,
+  value: T | Atom<T>,
+): UnsubscribeFn {
   if (isAtom(value)) {
-    return ctx.get(value);
+    return ctx.subscribe(value, (newValue) => {
+      atom(ctx, newValue);
+    });
   }
-  return value;
+  atom(ctx, value);
+  return emptyUnsubscribe;
 }
 
 type PropsProxy<T> = {
   insideProps: InsideProps<T>;
   setProps: (props: OutsideProps<T>) => void;
 };
+type MapElement = {
+  unsubscribe: UnsubscribeFn;
+  atom: AtomMut;
+};
 function createPropsProxy<Props>(ctx: Ctx): PropsProxy<Props> {
-  const propsMap = new Map<string, AtomMut>();
+  const propsMap = new Map<string, MapElement>();
   let outsideProps = {} as OutsideProps<Props>;
   return {
     insideProps: new Proxy({} as InsideProps<Props>, {
       get(target: InsideProps<Props>, p: string, receiver: any) {
-        if (propsMap.has(p)) {
-          return propsMap.get(p);
+        const el = propsMap.get(p);
+        if (el) {
+          return el.atom;
         }
         // @ts-ignore
         const outsideValue = outsideProps[p];
-        const a = atom(unwrapValue(ctx, outsideValue));
-        propsMap.set(p, a);
+        const a = atom(undefined);
+        const unsubscribe = setAtomValue(ctx, a, outsideValue);
+        propsMap.set(p, { atom: a, unsubscribe });
         return a;
       },
     }),
     setProps: (props) => {
       outsideProps = props;
-      for (const [propName, propValue] of propsMap) {
+      for (const [propName, { atom, unsubscribe }] of propsMap) {
         // @ts-ignore
         const outsideValue = props[propName];
-        if (ctx.get(propValue) !== unwrapValue(ctx, outsideValue)) {
-          propValue(ctx, unwrapValue(ctx, outsideValue));
-        }
+        const newUnsubscribe = setAtomValue(ctx, atom, outsideValue);
+        unsubscribe();
+        propsMap.set(propName, { atom, unsubscribe: newUnsubscribe });
       }
     },
   };

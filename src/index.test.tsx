@@ -6,30 +6,20 @@ import { customRender } from "./test-utils";
 
 describe("declare component", () => {
   describe("prop", () => {
+    const Component = declareComponent<{ x: number }>(({ x }) => {
+      const y = atom((ctx) => ctx.spy(x) + 1);
+
+      return (ctx) => {
+        return <div>{ctx.spy(y)}</div>;
+      };
+    });
     test("primitive", () => {
-      const Component = declareComponent<{ x: number }>(({ x }) => {
-        const y = atom((ctx) => ctx.spy(x) + 1);
-
-        return (ctx) => {
-          return <div>{ctx.spy(y)}</div>;
-        };
-      });
-
       customRender(<Component x={1} />);
-
       expect(screen.queryByText("2")).toBeInTheDocument();
       expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
 
     test("atom", () => {
-      const Component = declareComponent<{ x: number }>(({ x }) => {
-        const y = atom((ctx) => ctx.spy(x) + 1);
-
-        return (ctx) => {
-          return <div>{ctx.spy(y)}</div>;
-        };
-      });
-
       customRender(<Component x={atom(1)} />);
 
       expect(screen.queryByText("2")).toBeInTheDocument();
@@ -71,6 +61,26 @@ describe("declare component", () => {
 
       rendered.rerender(<Component x={atom(2)} />);
       expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("atom + change value", async () => {
+      const a = atom(1);
+      const { rendered, ctx } = customRender(<Component x={a} />);
+      expect(screen.queryByText("2")).toBeInTheDocument();
+      await ctx.schedule(() => a(ctx, 2));
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("atom => atom + change value", async () => {
+      const { rendered, ctx } = customRender(<Component x={atom(1)} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      const a = atom(2);
+      rendered.rerender(<Component x={a} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+      await ctx.schedule(() => a(ctx, 4));
+      expect(screen.queryByText("5")).toBeInTheDocument();
     });
 
     test("atom => primitive", () => {
