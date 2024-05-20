@@ -5,22 +5,39 @@ import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
 
 describe("declare component", () => {
-  test("simple render", () => {
-    const Component = declareComponent<{ x: number }>(({ x }) => {
-      const y = atom((ctx) => ctx.spy(x) + 1);
+  describe("prop", () => {
+    test("primitive", () => {
+      const Component = declareComponent<{ x: number }>(({ x }) => {
+        const y = atom((ctx) => ctx.spy(x) + 1);
 
-      return (ctx) => {
-        return <div>{ctx.spy(y)}</div>;
-      };
+        return (ctx) => {
+          return <div>{ctx.spy(y)}</div>;
+        };
+      });
+
+      customRender(<Component x={1} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+      expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
 
-    customRender(<Component x={1} />);
+    test("atom", () => {
+      const Component = declareComponent<{ x: number }>(({ x }) => {
+        const y = atom((ctx) => ctx.spy(x) + 1);
 
-    expect(screen.queryByText("2")).toBeInTheDocument();
-    expect(screen.queryByText("1")).not.toBeInTheDocument();
+        return (ctx) => {
+          return <div>{ctx.spy(y)}</div>;
+        };
+      });
+
+      customRender(<Component x={atom(1)} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+      expect(screen.queryByText("1")).not.toBeInTheDocument();
+    });
   });
 
-  test("change prop", () => {
+  describe("change prop", () => {
     const Component = declareComponent<{ x: number }>(({ x }) => {
       const y = atom((ctx) => ctx.spy(x) + 1);
 
@@ -29,12 +46,41 @@ describe("declare component", () => {
       };
     });
 
-    const { rendered } = customRender(<Component x={1} />);
+    test("primitive => primitive", () => {
+      const { rendered } = customRender(<Component x={1} />);
 
-    expect(screen.queryByText("2")).toBeInTheDocument();
+      expect(screen.queryByText("2")).toBeInTheDocument();
 
-    rendered.rerender(<Component x={2} />);
-    expect(screen.queryByText("3")).toBeInTheDocument();
+      rendered.rerender(<Component x={2} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("primitive => atom", () => {
+      const { rendered } = customRender(<Component x={1} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      rendered.rerender(<Component x={atom(2)} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("atom => atom", () => {
+      const { rendered } = customRender(<Component x={atom(1)} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      rendered.rerender(<Component x={atom(2)} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
+
+    test("atom => primitive", () => {
+      const { rendered } = customRender(<Component x={atom(1)} />);
+
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      rendered.rerender(<Component x={2} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
   });
 
   test("change don't execute init phase", () => {
