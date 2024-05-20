@@ -12,7 +12,7 @@ describe("declare component", () => {
     const Component = declareComponent<{ x: number }>(({ x }) => {
       const y = atom((ctx) => ctx.spy(x) + 1);
 
-      return (ctx) => {
+      return ({ ctx }) => {
         return <div>{ctx.spy(y)}</div>;
       };
     });
@@ -34,7 +34,7 @@ describe("declare component", () => {
     const Component = declareComponent<{ x?: number }>(({ x }) => {
       const y = atom((ctx) => (ctx.spy(x) ?? 0) + 1);
 
-      return (ctx) => {
+      return ({ ctx }) => {
         return <div>{ctx.spy(y)}</div>;
       };
     });
@@ -120,7 +120,7 @@ describe("declare component", () => {
         const initChild = vi.fn();
         const Child = declareComponent<{ x: number }>(({ x }) => {
           initChild();
-          return (ctx) => {
+          return ({ ctx }) => {
             return <div>{ctx.spy(x)}</div>;
           };
         });
@@ -129,7 +129,7 @@ describe("declare component", () => {
         const renderParent = vi.fn();
         const Parent = declareComponent<{ x: number }>(({ x }) => {
           initParent();
-          return (ctx) => {
+          return () => {
             renderParent();
             return <Child x={x} />;
           };
@@ -152,7 +152,7 @@ describe("declare component", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
           count();
-          return (ctx) => {
+          return ({ ctx }) => {
             return <div>{ctx.spy(x)}</div>;
           };
         });
@@ -170,7 +170,7 @@ describe("declare component", () => {
       test("primitive => primitive", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return (ctx) => {
+          return ({ ctx }) => {
             count();
             return <div>{ctx.spy(x)}</div>;
           };
@@ -185,7 +185,7 @@ describe("declare component", () => {
       test("primitive => atom", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return (ctx) => {
+          return ({ ctx }) => {
             count();
             return <div>{ctx.spy(x)}</div>;
           };
@@ -200,7 +200,7 @@ describe("declare component", () => {
       test("atom => atom", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return (ctx) => {
+          return ({ ctx }) => {
             count();
             return <div>{ctx.spy(x)}</div>;
           };
@@ -215,7 +215,7 @@ describe("declare component", () => {
       test("atom => primitive", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return (ctx) => {
+          return ({ ctx }) => {
             count();
             return <div>{ctx.spy(x)}</div>;
           };
@@ -235,7 +235,7 @@ describe("declare component", () => {
         ctx.spy(x) !== undefined ? "defined1" : "undefined2",
       );
 
-      return (ctx) => {
+      return ({ ctx }) => {
         return <div>{ctx.spy(y)}</div>;
       };
     });
