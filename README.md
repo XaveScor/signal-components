@@ -35,7 +35,7 @@ const Component = declareComponent<Props>(({x, y}, options) => {
   const z = atom(ctx => ctx.spy(x) + ctx.spy(y));
   // init phase
 
-  return (ctx) => {
+  return ({ctx}) => {
     // render phase
     return <div>{ctx.spy(z)}</div>
   }
