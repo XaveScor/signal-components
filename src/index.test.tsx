@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
-import { declareComponent } from "./index";
+import { declareComponent, defaults } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
 
@@ -8,7 +8,7 @@ import { customRender } from "./test-utils";
 const StrictModePenalty = 2;
 
 describe("declare component", () => {
-  describe("prop", () => {
+  describe("outside prop", () => {
     const Component = declareComponent<{ x: number }>(({ x }) => {
       const y = atom((ctx) => ctx.spy(x) + 1);
 
@@ -229,22 +229,37 @@ describe("declare component", () => {
     });
   });
 
-  test("optional props", () => {
-    const Component = declareComponent<{ x?: number }>(({ x }) => {
-      const y = atom((ctx) =>
-        ctx.spy(x) !== undefined ? "defined1" : "undefined2",
-      );
+  describe("optional internal props", () => {
+    test("optional props", () => {
+      const Component = declareComponent<{ x?: number }>(({ x }) => {
+        const y = atom((ctx) =>
+          ctx.spy(x) !== undefined ? "defined1" : "undefined2",
+        );
 
-      return ({ ctx }) => {
-        return <div>{ctx.spy(y)}</div>;
-      };
+        return ({ ctx }) => {
+          return <div>{ctx.spy(y)}</div>;
+        };
+      });
+
+      const { rendered } = customRender(<Component />);
+
+      expect(screen.queryByText("undefined2")).toBeInTheDocument();
+
+      rendered.rerender(<Component x={2} />);
+      expect(screen.queryByText("defined1")).toBeInTheDocument();
     });
 
-    const { rendered } = customRender(<Component />);
+    test("defaults", () => {
+      const Component = declareComponent<{ x?: number }>((props) => {
+        const { x } = defaults(props, { x: 1 });
+        return ({ ctx }) => {
+          return <div>{ctx.spy(x)}</div>;
+        };
+      });
 
-    expect(screen.queryByText("undefined2")).toBeInTheDocument();
+      const { rendered } = customRender(<Component />);
 
-    rendered.rerender(<Component x={2} />);
-    expect(screen.queryByText("defined1")).toBeInTheDocument();
+      expect(screen.queryByText("1")).toBeInTheDocument();
+    });
   });
 });
