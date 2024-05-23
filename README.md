@@ -55,6 +55,41 @@ const Component = declareComponent<Props>(({x, y}, options) => {
 - **Inside props** - The internal API of the component. You always get Atom<T> here inside props. Nothing will distract you from your reactive code.
 - **Props** - The types. Please, don't use Atom<T> here. Only raw types. 
 
+### Insights
+
+**Inside props** is the Proxy object. That's the reason because we have one significant limitation: you cannot get rest of the `inside props`.
+```tsx
+const Component = declareComponent<Props>((insideProps, options) => {
+  const {...rest} = insideProps; // <- Error here. Use `rest` operator instead
+  // ...
+});
+```
+
+### Operators
+
+#### defaults
+
+**Defaults** operator is a way to provide default values for the __internal props__.
+```tsx
+const Component = declareComponent<Props>((insideProps, options) => {
+  const {x = atom(1)} = insideProps; // <- Error here because x is Atom<undefined>. Not undefined
+  const {x} = defaults(insideProps, {x: 1}); // <- Ok way
+  // ...
+});
+```
+
+#### rest
+**Rest** operator is a way to get the rest of the __internal props__. See [Insights](#Insights) for more information.
+```tsx
+const Component = declareComponent<Props>((insideProps, options) => {
+  const {x, ...rest} = insideProps; // <- Error here. Use `rest` operator instead
+  
+  const {x} = insideProps; 
+  const restProps = rest(insideProps, ['x']); // <- Ok way
+  // ...
+});
+```
+
 ## Supported Reactivity Systems
 
 - [Reatom](https://reatom.dev)
