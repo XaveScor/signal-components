@@ -41,3 +41,4 @@ export function declareComponent<Props>(
 }
 
 export { defaults } from "./defaults";
+export { rest } from "./rest";
