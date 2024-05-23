@@ -1,7 +1,11 @@
 {
   "name": "signal-components",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:XaveScor/signal-components.git"
+  },
   "module": "./dist/index.module.mjs",
   "exports": "./dist/index.modern.mjs",
   "main": "./dist/index.cjs",
