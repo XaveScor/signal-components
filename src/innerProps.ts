@@ -31,19 +31,35 @@ export function createPropsProxy<Props>(
 ): PropsProxy<Props> {
   const propsMap = new Map<string, MapElement>();
   let rawOutsideProps = outsideProps;
+  function get(p: string) {
+    const el = propsMap.get(p);
+    if (el) {
+      return el.atom;
+    }
+    // @ts-ignore
+    const outsideValue = outsideProps[p];
+    const a = atom(undefined);
+    const unsubscribe = setAtomValue(ctx, a, outsideValue);
+    propsMap.set(p, { atom: a, unsubscribe });
+    return a;
+  }
   return {
     insideProps: new Proxy({} as InsideProps<Props>, {
       get(target: InsideProps<Props>, p: string, receiver: any) {
-        const el = propsMap.get(p);
-        if (el) {
-          return el.atom;
-        }
-        // @ts-ignore
-        const outsideValue = outsideProps[p];
-        const a = atom(undefined);
-        const unsubscribe = setAtomValue(ctx, a, outsideValue);
-        propsMap.set(p, { atom: a, unsubscribe });
-        return a;
+        return get(p);
+      },
+      ownKeys(target: InsideProps<Props>): ArrayLike<string | symbol> {
+        return Object.keys(rawOutsideProps);
+      },
+      getOwnPropertyDescriptor(
+        target: InsideProps<Props>,
+        p: string,
+      ): PropertyDescriptor | undefined {
+        return {
+          value: get(p),
+          configurable: true,
+          enumerable: true,
+        };
       },
     }),
     setProps: (props) => {
