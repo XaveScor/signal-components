@@ -13,4 +13,12 @@ describe("innerProps", () => {
     expect(isAtom(spread.x)).toBeTruthy();
     expect(ctx.get(spread.x)).toBe(1);
   });
+
+  test("#10. get value after change", () => {
+    const ctx = createTestCtx();
+    const { insideProps, setProps } = createPropsProxy(ctx, { x: 1 });
+    setProps({ x: 2 });
+
+    expect(ctx.get(insideProps.x)).toBe(2);
+  });
 });

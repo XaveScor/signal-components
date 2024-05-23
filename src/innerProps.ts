@@ -37,7 +37,7 @@ export function createPropsProxy<Props>(
       return el.atom;
     }
     // @ts-ignore
-    const outsideValue = outsideProps[p];
+    const outsideValue = rawOutsideProps[p];
     const a = atom(undefined);
     const unsubscribe = setAtomValue(ctx, a, outsideValue);
     propsMap.set(p, { atom: a, unsubscribe });
