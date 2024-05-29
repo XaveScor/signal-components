@@ -55,6 +55,9 @@ const Component = declareComponent<Props>(({x, y}, options) => {
 - **Inside props** - The internal API of the component. You always get Atom<T> here inside props. Nothing will distract you from your reactive code.
 - **Props** - The types. Please, don't use Atom<T> here. Only raw types. 
 
+#### Stable functions
+Props with prefix `on` are called "Stable functions" in signal-components.
+That means you receive the same function instance from the `insideProps`. Doesn't matter how many times the component is rendered and what you pass to the prop: different functions or the `undefined` value.
 ### Insights
 
 **Inside props** is the Proxy object. That's the reason because we have one significant limitation: you cannot get rest of the `inside props`.
