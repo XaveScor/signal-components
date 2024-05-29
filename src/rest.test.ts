@@ -7,7 +7,10 @@ import { rest } from "./rest";
 describe("rest", () => {
   test("spread", () => {
     const ctx = createTestCtx();
-    const { insideProps } = createPropsProxy(ctx, { x: 1, y: "string" });
+    const { insideProps } = createPropsProxy<{ x: number; y: string }>(ctx, {
+      x: 1,
+      y: "string",
+    });
     const spread = { ...rest(insideProps, ["x"]) };
 
     expect(Object.keys(spread)).toEqual(["y"]);

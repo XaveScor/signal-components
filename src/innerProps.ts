@@ -1,5 +1,5 @@
 import { atom, Atom, AtomMut, Ctx, isAtom } from "@reatom/core";
-import { InsideProps, OutsideProps } from "./types";
+import { AnyF, InsideProps, OutsideProps } from "./types";
 
 type UnsubscribeFn = () => void;
 const emptyUnsubscribe: UnsubscribeFn = () => {};
@@ -21,10 +21,27 @@ type PropsProxy<T> = {
   insideProps: InsideProps<T>;
   setProps: (props: OutsideProps<T>) => void;
 };
-type MapElement = {
-  unsubscribe: UnsubscribeFn;
-  atom: AtomMut;
-};
+type MapElement =
+  | {
+      type: "atom";
+      unsubscribe: UnsubscribeFn;
+      cached: AtomMut;
+    }
+  | {
+      type: "function";
+      ref: {
+        f: AnyF;
+      };
+      cached: AnyF;
+    };
+function divideProp(name: string): MapElement["type"] {
+  if (name.startsWith("on")) {
+    return "function";
+  }
+  return "atom";
+}
+
+const emptyFn = () => {};
 export function createPropsProxy<Props>(
   ctx: Ctx,
   outsideProps: OutsideProps<Props>,
@@ -34,14 +51,26 @@ export function createPropsProxy<Props>(
   function get(p: string) {
     const el = propsMap.get(p);
     if (el) {
-      return el.atom;
+      return el.cached;
     }
     // @ts-ignore
     const outsideValue = rawOutsideProps[p];
-    const a = atom(undefined);
-    const unsubscribe = setAtomValue(ctx, a, outsideValue);
-    propsMap.set(p, { atom: a, unsubscribe });
-    return a;
+    switch (divideProp(p)) {
+      case "atom":
+        const anAtom = atom(undefined);
+        const unsubscribe = setAtomValue(ctx, anAtom, outsideValue);
+        propsMap.set(p, { type: "atom", cached: anAtom, unsubscribe });
+        return anAtom;
+      case "function":
+        const ref = {
+          f: outsideValue ?? emptyFn,
+        };
+        const f: AnyF = (...args) => {
+          return ref.f(...args);
+        };
+        propsMap.set(p, { type: "function", cached: f, ref });
+        return f;
+    }
   }
   return {
     insideProps: new Proxy({} as InsideProps<Props>, {
@@ -64,12 +93,20 @@ export function createPropsProxy<Props>(
     }),
     setProps: (props) => {
       rawOutsideProps = props;
-      for (const [propName, { atom, unsubscribe }] of propsMap) {
+      for (const [propName, el] of propsMap) {
         // @ts-ignore
         const outsideValue = props[propName];
-        const newUnsubscribe = setAtomValue(ctx, atom, outsideValue);
-        unsubscribe();
-        propsMap.set(propName, { atom, unsubscribe: newUnsubscribe });
+        switch (el.type) {
+          case "atom":
+            const { cached, unsubscribe } = el;
+            el.unsubscribe = setAtomValue(ctx, cached, outsideValue);
+            unsubscribe();
+            break;
+          case "function":
+            const { ref } = el;
+            ref.f = outsideValue ?? emptyFn;
+            break;
+        }
       }
     },
   };
