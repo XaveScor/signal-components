@@ -49,6 +49,11 @@ const Component = declareComponent<Props>(({x, y}, options) => {
 - **Init phase** - This phase is called only once when the component is created. It's a good place to create atoms and functions.
 - **Render phase** - This phase is called every time the component is rendered. We delegate the rendering to React. It means you can use any React hooks and components inside the render phase.
 
+#### Render Phase
+You have access to the functions in the render phase:  
+- **ctx.spy** - This function is used to subscribe rerender to a received Atom. If value inside the Atom is changed, the React render call.
+- **ctx.component** - This function is the way to create a new component for a received Atom. If value inside the Atom is changed, the React rerender only created component. Nothing more. It is the good way to minimize the rerenders.
+
 ### Props
 
 - **Outside props** - The public API of the component. You can pass T | Atom<T> here. Signal-components will pass it to the init phase as an Atom<T>.
