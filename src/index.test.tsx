@@ -227,6 +227,27 @@ describe("declare component", () => {
         expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
       });
     });
+
+    describe("spy.component", () => {
+      test("isolated", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return ({ ctx }) => {
+            count();
+            return <div>{ctx.component(x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(screen.queryByText("1")).toBeInTheDocument();
+        expect(screen.queryByText("2")).not.toBeInTheDocument();
+        rendered.rerender(<Component x={2} />);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(screen.queryByText("1")).not.toBeInTheDocument();
+        expect(screen.queryByText("2")).toBeInTheDocument();
+      });
+    });
   });
 
   describe("optional internal props", () => {

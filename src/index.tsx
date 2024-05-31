@@ -1,13 +1,19 @@
 import React from "react";
-import { CtxSpy } from "@reatom/core";
+import { Atom, CtxSpy } from "@reatom/core";
 import { reatomComponent, useCtx } from "@reatom/npm-react";
 import { InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
+import { createComponentsStore } from "./componentsStore";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
-
+type RenderCtx = {
+  spy: CtxSpy["spy"];
+  component: (
+    anAtom: Atom<string | number | boolean | null | undefined>,
+  ) => React.ReactElement;
+};
 type RenderArg = {
-  ctx: CtxSpy;
+  ctx: RenderCtx;
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
 type ComponentArg<Props> = {};
@@ -21,19 +27,32 @@ export function declareComponent<Props>(
 ): ReturnComponent<Props> {
   // @ts-ignore TODO: implement ref support later
   return (props: OutsideProps<Props>) => {
-    const ctx = useCtx();
+    const rootCtx = useCtx();
     const { insideProps, setProps } = React.useMemo(
-      () => createPropsProxy<Props>(ctx, props),
+      () => createPropsProxy<Props>(rootCtx, props),
       [],
     );
     setProps(props);
+
+    const componentsStore = React.useMemo(() => createComponentsStore(), []);
 
     const wrapped = React.useMemo(() => {
       return component(insideProps, {});
     }, []);
 
     const Component = React.useMemo(() => {
-      return React.memo(reatomComponent(({ ctx }) => wrapped({ ctx })));
+      return React.memo(
+        reatomComponent(({ ctx }) => {
+          const renderCtx = React.useMemo(() => {
+            return {
+              spy: ctx.spy,
+              component: (atom) => componentsStore.renderAtom(atom),
+            } as RenderCtx;
+          }, [ctx]);
+
+          return wrapped({ ctx: renderCtx });
+        }),
+      );
     }, []);
 
     return <Component />;
