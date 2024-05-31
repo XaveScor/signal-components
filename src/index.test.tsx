@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
-import { declareComponent, defaults } from "./index";
+import { declareComponent, defaults, RenderCtx } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
 
@@ -281,6 +281,48 @@ describe("declare component", () => {
       const { rendered } = customRender(<Component />);
 
       expect(screen.queryByText("1")).toBeInTheDocument();
+    });
+  });
+
+  describe("ctx", () => {
+    const obj = {
+      ctx: null as RenderCtx | null,
+      Component: declareComponent(() => {
+        return ({ ctx }) => {
+          obj.ctx = ctx;
+          return <></>;
+        };
+      }),
+    };
+
+    test("spy", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.spy).toStrictEqual(expect.any(Function));
+    });
+
+    test("component", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.component).toStrictEqual(expect.any(Function));
+    });
+
+    test("get", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.get).toStrictEqual(expect.any(Function));
+    });
+
+    test("schedule", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.schedule).toStrictEqual(expect.any(Function));
+    });
+
+    test("subscribe", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.subscribe).toStrictEqual(expect.any(Function));
+    });
+
+    test("cause", () => {
+      customRender(<obj.Component />);
+      expect(obj.ctx?.cause).toStrictEqual(expect.any(Object));
     });
   });
 });
