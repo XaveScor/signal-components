@@ -6,8 +6,7 @@ import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
-type RenderCtx = {
-  spy: CtxSpy["spy"];
+export type RenderCtx = CtxSpy & {
   component: (
     anAtom: Atom<string | number | boolean | null | undefined>,
   ) => React.ReactElement;
@@ -45,7 +44,7 @@ export function declareComponent<Props>(
         reatomComponent(({ ctx }) => {
           const renderCtx = React.useMemo(() => {
             return {
-              spy: ctx.spy,
+              ...ctx,
               component: (atom) => componentsStore.renderAtom(atom),
             } as RenderCtx;
           }, [ctx]);
