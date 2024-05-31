@@ -61,8 +61,10 @@ You have access to the functions in the render phase:
 - **Props** - The types. Please, don't use Atom<T> here. Only raw types. 
 
 #### Stable functions
-Props with prefix `on` are called "Stable functions" in signal-components.
+Props with prefix `on[A-Z]` are called "Stable functions" in signal-components.
 That means you receive the same function instance from the `insideProps`. Doesn't matter how many times the component is rendered and what you pass to the prop: different functions or the `undefined` value.
+
+Stable functions benefits demo: https://codesandbox.io/p/sandbox/signal-components-stable-functions-7d4m34
 ### Insights
 
 **Inside props** is the Proxy object. That's the reason because we have one significant limitation: you cannot get rest of the `inside props`.

@@ -34,8 +34,9 @@ type MapElement =
       };
       cached: AnyF;
     };
+const stableFnRegexp = /^on[A-Z]/;
 function divideProp(name: string): MapElement["type"] {
-  if (name.startsWith("on")) {
+  if (stableFnRegexp.test(name)) {
     return "function";
   }
   return "atom";
