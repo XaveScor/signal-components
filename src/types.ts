@@ -3,7 +3,7 @@ import { Atom, AtomState } from "@reatom/core";
 type ConvertToAtom<T> = T extends Atom ? T : Atom<T>;
 
 type OnFunctionsProps<Props> = RemoveNever<{
-  [K in keyof Props as K extends `on${infer T}`
+  [K in keyof Props as K extends `on${Capitalize<infer T>}`
     ? K
     : never]: Props[K] extends AnyF ? Props[K] : never;
 }>;

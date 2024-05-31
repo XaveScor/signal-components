@@ -1,5 +1,5 @@
-import { describe, test, expect, vi } from "vitest";
-import { isAtom } from "@reatom/core";
+import { describe, test, expect, vi, expectTypeOf } from "vitest";
+import { Atom, isAtom } from "@reatom/core";
 import { createTestCtx } from "@reatom/testing";
 import { createPropsProxy } from "./innerProps";
 
@@ -73,6 +73,40 @@ describe("props", () => {
         expect(fn).toHaveBeenCalledWith("initial");
         expect(fn).toHaveBeenCalledWith("changed");
         expect(fn).toHaveBeenCalledWith("the latest");
+      });
+
+      test("functions inside `on` props and non-capitalized next letter should be an atom", () => {
+        type Props = {
+          only: () => void;
+        };
+        const value: Props = {
+          only: () => 1,
+        };
+        const ctx = createTestCtx();
+        const { insideProps } = createPropsProxy<Props>(ctx, value);
+
+        expectTypeOf(insideProps)
+          .toHaveProperty("only")
+          .toMatchTypeOf<Atom<() => void>>();
+
+        expect(isAtom(insideProps.only)).toBeTruthy();
+      });
+
+      test("functions inside `on` props and capitalized next letter should be a function", () => {
+        type Props = {
+          onClick: () => void;
+        };
+        const value: Props = {
+          onClick: () => 1,
+        };
+        const ctx = createTestCtx();
+        const { insideProps } = createPropsProxy<Props>(ctx, value);
+
+        expectTypeOf(insideProps)
+          .toHaveProperty("onClick")
+          .toMatchTypeOf<() => void>();
+
+        expect(insideProps.onClick).toStrictEqual(expect.any(Function));
       });
 
       test("optional functions", () => {
