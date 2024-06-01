@@ -28,6 +28,22 @@ describe("declare component", () => {
       expect(screen.queryByText("2")).toBeInTheDocument();
       expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
+
+    test("function non-stable", () => {
+      const Component = declareComponent<{ x: () => number }>(({ x }) => {
+        const y = atom((ctx) => ctx.spy(x)() + 1);
+
+        return ({ ctx }) => {
+          return <div>{ctx.spy(y)}</div>;
+        };
+      });
+
+      customRender(<Component x={() => 1} />);
+      expect(screen.queryByText("2")).toBeInTheDocument();
+
+      customRender(<Component x={() => 2} />);
+      expect(screen.queryByText("3")).toBeInTheDocument();
+    });
   });
 
   describe("change prop", () => {
@@ -246,6 +262,25 @@ describe("declare component", () => {
         expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
         expect(screen.queryByText("1")).not.toBeInTheDocument();
         expect(screen.queryByText("2")).toBeInTheDocument();
+      });
+
+      test("mapper", () => {
+        const count = vi.fn();
+        const Component = declareComponent<{ x: number }>(({ x }) => {
+          return ({ ctx }) => {
+            count();
+            return <div>{ctx.component(x, (x) => "x" + 10 * x)}</div>;
+          };
+        });
+
+        const { rendered } = customRender(<Component x={1} />);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(screen.queryByText("x10")).toBeInTheDocument();
+        expect(screen.queryByText("x20")).not.toBeInTheDocument();
+        rendered.rerender(<Component x={2} />);
+        expect(count).toHaveBeenCalledTimes(StrictModePenalty * 1);
+        expect(screen.queryByText("x10")).not.toBeInTheDocument();
+        expect(screen.queryByText("x20")).toBeInTheDocument();
       });
     });
   });
