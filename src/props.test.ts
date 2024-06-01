@@ -109,6 +109,17 @@ describe("props", () => {
         expect(insideProps.onClick).toStrictEqual(expect.any(Function));
       });
 
+      test("stable functions can have only void return type", () => {
+        type Props = {
+          onClick: () => number;
+        };
+
+        expectTypeOf<typeof createPropsProxy<Props>>()
+          .returns.toHaveProperty("insideProps")
+          .toHaveProperty("onClick")
+          .toBeNever();
+      });
+
       test("optional functions", () => {
         const ctx = createTestCtx();
         const { insideProps } = createPropsProxy<{
@@ -117,6 +128,9 @@ describe("props", () => {
 
         expect(insideProps.onChange).toStrictEqual(expect.any(Function));
         expect(() => insideProps.onChange()).not.toThrow();
+
+        expectTypeOf(insideProps.onChange).toMatchTypeOf<() => void>();
+        expectTypeOf(insideProps.onChange).not.toBeUndefined();
       });
     });
   });
