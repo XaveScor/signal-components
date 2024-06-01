@@ -45,49 +45,41 @@ export function declareComponent<Props>(
     );
     setProps(props);
 
-    const HooksPhase = React.useMemo(
+    const { wireHook, subscriptions } = React.useMemo(
+      () => createWireHook(rootCtx),
+      [],
+    );
+    const firstRender = React.useRef<RenderF | null>(null);
+    if (!firstRender.current) {
+      firstRender.current = component(insideProps, { wireHook });
+    } else {
+      subscriptions.forEach((sub) => sub());
+    }
+    const wrapped = firstRender.current;
+
+    const InitPhase = React.useMemo(
       () =>
         React.memo(() => {
-          const { wireHook, subscriptions } = React.useMemo(
-            () => createWireHook(rootCtx),
-            [],
-          );
-          const firstRender = React.useRef<RenderF | null>(null);
-          if (!firstRender.current) {
-            firstRender.current = component(insideProps, { wireHook });
-          } else {
-            subscriptions.forEach((sub) => sub());
-          }
-          const wrapped = firstRender.current;
+          const componentsStore = createComponentsStore();
 
-          const InitPhase = React.useMemo(
-            () =>
-              React.memo(() => {
-                const componentsStore = createComponentsStore();
+          const RenderPhase = reatomComponent(({ ctx }) => {
+            const renderCtx = React.useMemo(() => {
+              return {
+                ...ctx,
+                component: (atom: Atom, mapper?: AnyF) =>
+                  componentsStore.renderAtom(atom, mapper),
+              } as RenderCtx;
+            }, [ctx]);
 
-                const RenderPhase = reatomComponent(({ ctx }) => {
-                  const renderCtx = React.useMemo(() => {
-                    return {
-                      ...ctx,
-                      component: (atom: Atom, mapper?: AnyF) =>
-                        componentsStore.renderAtom(atom, mapper),
-                    } as RenderCtx;
-                  }, [ctx]);
+            return wrapped({ ctx: renderCtx });
+          });
 
-                  return wrapped({ ctx: renderCtx });
-                });
-
-                return <RenderPhase />;
-              }),
-            [],
-          );
-
-          return <InitPhase />;
+          return <RenderPhase />;
         }),
       [],
     );
 
-    return <HooksPhase />;
+    return <InitPhase />;
   };
 }
 

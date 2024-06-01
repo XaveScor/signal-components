@@ -2,14 +2,14 @@ import { describe, test, expect, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { declareComponent } from "./index";
 import { customRender } from "./test-utils";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 
 // React recreate useMemo twice on mount in StrictMode
 const StrictModePenalty = 2;
 
 describe("hooks", () => {
   test("useState", () => {
-    let innerSetState: Dispatch<SetStateAction<number>> = () => {};
+    let innerSetState = (x: number) => {};
     const countInit = vi.fn();
     const countRender = vi.fn();
     const Component = declareComponent((_, { wireHook }) => {
@@ -46,6 +46,55 @@ describe("hooks", () => {
     act(() => {
       innerSetState(3);
     });
+    expect(countInit).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(countRender).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.queryByText("2")).not.toBeInTheDocument();
+    expect(screen.queryByText("3")).toBeInTheDocument();
+  });
+
+  test("context", () => {
+    const countInit = vi.fn();
+    const countRender = vi.fn();
+    const context = React.createContext(1);
+    const Component = declareComponent((_, { wireHook }) => {
+      countInit();
+
+      const number = wireHook(() => React.useContext(context));
+
+      return ({ ctx }) => {
+        countRender();
+        return <div>{ctx.component(number)}</div>;
+      };
+    });
+
+    const { rendered } = customRender(
+      <context.Provider value={1}>
+        <Component />
+      </context.Provider>,
+    );
+    expect(countInit).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(countRender).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(screen.queryByText("1")).toBeInTheDocument();
+    expect(screen.queryByText("2")).not.toBeInTheDocument();
+    expect(screen.queryByText("3")).not.toBeInTheDocument();
+
+    rendered.rerender(
+      <context.Provider value={2}>
+        <Component />
+      </context.Provider>,
+    );
+    expect(countInit).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(countRender).toHaveBeenCalledTimes(StrictModePenalty * 1);
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+    expect(screen.queryByText("2")).toBeInTheDocument();
+    expect(screen.queryByText("3")).not.toBeInTheDocument();
+
+    rendered.rerender(
+      <context.Provider value={3}>
+        <Component />
+      </context.Provider>,
+    );
     expect(countInit).toHaveBeenCalledTimes(StrictModePenalty * 1);
     expect(countRender).toHaveBeenCalledTimes(StrictModePenalty * 1);
     expect(screen.queryByText("1")).not.toBeInTheDocument();
