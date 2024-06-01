@@ -5,15 +5,15 @@ type UnsubscribeFn = () => void;
 const emptyUnsubscribe: UnsubscribeFn = () => {};
 function setAtomValue<T>(
   ctx: Ctx,
-  atom: AtomMut<T>,
+  anAtom: AtomMut<T>,
   value: T | Atom<T>,
 ): UnsubscribeFn {
   if (isAtom(value)) {
     return ctx.subscribe(value, (newValue) => {
-      atom(ctx, newValue);
+      anAtom(ctx, newValue);
     });
   }
-  atom(ctx, value);
+  anAtom(ctx, typeof value === "function" ? () => value : value);
   return emptyUnsubscribe;
 }
 

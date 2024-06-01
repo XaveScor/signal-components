@@ -1,15 +1,24 @@
 import React from "react";
-import { Atom, CtxSpy } from "@reatom/core";
+import { Atom, AtomState, CtxSpy } from "@reatom/core";
 import { reatomComponent, useCtx } from "@reatom/npm-react";
-import { InsideProps, OutsideProps } from "./types";
+import { AnyF, InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 export type RenderCtx = CtxSpy & {
-  component: (
-    anAtom: Atom<string | number | boolean | null | undefined>,
-  ) => React.ReactElement;
+  component: {
+    <
+      A extends Atom<string | number | boolean | null | undefined>,
+      B extends string | number | boolean | null | undefined,
+    >(
+      anAtom: A,
+      mapper: (value: AtomState<A>) => B,
+    ): React.ReactElement;
+    <A extends Atom<string | number | boolean | null | undefined>>(
+      anAtom: A,
+    ): React.ReactElement;
+  };
 };
 type RenderArg = {
   ctx: RenderCtx;
@@ -45,7 +54,8 @@ export function declareComponent<Props>(
           const renderCtx = React.useMemo(() => {
             return {
               ...ctx,
-              component: (atom) => componentsStore.renderAtom(atom),
+              component: (atom: Atom, mapper?: AnyF) =>
+                componentsStore.renderAtom(atom, mapper),
             } as RenderCtx;
           }, [ctx]);
 
