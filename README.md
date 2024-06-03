@@ -35,9 +35,9 @@ const Component = declareComponent<Props>(({x, y}, options) => {
   const z = atom(ctx => ctx.spy(x) + ctx.spy(y));
   // init phase
 
-  return ({ctx}) => {
+  return ({spy}) => {
     // render phase
-    return <div>{ctx.spy(z)}</div>
+    return <div>{spy(z)}</div>
   }
 });
 
@@ -55,9 +55,9 @@ You have access to the functions in the init phase via the second arg:
 
 #### Render Phase
 You have access to the functions in the render phase:  
-- **ctx.spy** - This function is used to subscribe rerender to a received Atom. If value inside the Atom is changed, the React render call.
-- **ctx.component** - This function is the way to create a new component for a received Atom. If value inside the Atom is changed, the React rerender only created component. Nothing more. It is the good way to minimize the rerenders.
-
+- **spy** - This function is used to subscribe rerender to a received Atom. If value inside the Atom is changed, the React render call.
+- **component** - This function is the way to create a new component for a received Atom. If value inside the Atom is changed, the React rerender only created component. Nothing more. It is the good way to minimize the rerenders.
+- **reatomCtx** - reatom context to call your atoms and actions if needed
 ### Props
 
 - **Outside props** - The public API of the component. You can pass T | Atom<T> here. Signal-components will pass it to the init phase as an Atom<T>.

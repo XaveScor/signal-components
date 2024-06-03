@@ -1,8 +1,9 @@
 import { describe, test, expect, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
-import { declareComponent, defaults, RenderCtx } from "./index";
+import { declareComponent, defaults } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
+import { RenderCtx } from "../dist";
 
 // React recreate useMemo twice on mount in StrictMode
 const StrictModePenalty = 2;
@@ -12,8 +13,8 @@ describe("declare component", () => {
     const Component = declareComponent<{ x: number }>(({ x }) => {
       const y = atom((ctx) => ctx.spy(x) + 1);
 
-      return ({ ctx }) => {
-        return <div>{ctx.spy(y)}</div>;
+      return ({ spy }) => {
+        return <div>{spy(y)}</div>;
       };
     });
     test("primitive", () => {
@@ -33,8 +34,8 @@ describe("declare component", () => {
       const Component = declareComponent<{ x: () => number }>(({ x }) => {
         const y = atom((ctx) => ctx.spy(x)() + 1);
 
-        return ({ ctx }) => {
-          return <div>{ctx.spy(y)}</div>;
+        return ({ spy }) => {
+          return <div>{spy(y)}</div>;
         };
       });
 
@@ -50,8 +51,8 @@ describe("declare component", () => {
     const Component = declareComponent<{ x?: number }>(({ x }) => {
       const y = atom((ctx) => (ctx.spy(x) ?? 0) + 1);
 
-      return ({ ctx }) => {
-        return <div>{ctx.spy(y)}</div>;
+      return ({ spy }) => {
+        return <div>{spy(y)}</div>;
       };
     });
 
@@ -136,8 +137,8 @@ describe("declare component", () => {
         const initChild = vi.fn();
         const Child = declareComponent<{ x: number }>(({ x }) => {
           initChild();
-          return ({ ctx }) => {
-            return <div>{ctx.spy(x)}</div>;
+          return ({ spy }) => {
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -168,8 +169,8 @@ describe("declare component", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
           count();
-          return ({ ctx }) => {
-            return <div>{ctx.spy(x)}</div>;
+          return ({ spy }) => {
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -186,9 +187,9 @@ describe("declare component", () => {
       test("primitive => primitive", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ spy }) => {
             count();
-            return <div>{ctx.spy(x)}</div>;
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -201,9 +202,9 @@ describe("declare component", () => {
       test("primitive => atom", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ spy }) => {
             count();
-            return <div>{ctx.spy(x)}</div>;
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -216,9 +217,9 @@ describe("declare component", () => {
       test("atom => atom", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ spy }) => {
             count();
-            return <div>{ctx.spy(x)}</div>;
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -231,9 +232,9 @@ describe("declare component", () => {
       test("atom => primitive", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ spy }) => {
             count();
-            return <div>{ctx.spy(x)}</div>;
+            return <div>{spy(x)}</div>;
           };
         });
 
@@ -248,9 +249,9 @@ describe("declare component", () => {
       test("isolated", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ component }) => {
             count();
-            return <div>{ctx.component(x)}</div>;
+            return <div>{component(x)}</div>;
           };
         });
 
@@ -267,9 +268,9 @@ describe("declare component", () => {
       test("mapper", () => {
         const count = vi.fn();
         const Component = declareComponent<{ x: number }>(({ x }) => {
-          return ({ ctx }) => {
+          return ({ component }) => {
             count();
-            return <div>{ctx.component(x, (x) => "x" + 10 * x)}</div>;
+            return <div>{component(x, (x) => "x" + 10 * x)}</div>;
           };
         });
 
@@ -292,8 +293,8 @@ describe("declare component", () => {
           ctx.spy(x) !== undefined ? "defined1" : "undefined2",
         );
 
-        return ({ ctx }) => {
-          return <div>{ctx.spy(y)}</div>;
+        return ({ spy }) => {
+          return <div>{spy(y)}</div>;
         };
       });
 
@@ -308,8 +309,8 @@ describe("declare component", () => {
     test("defaults", () => {
       const Component = declareComponent<{ x?: number }>((props) => {
         const { x } = defaults(props, { x: 1 });
-        return ({ ctx }) => {
-          return <div>{ctx.spy(x)}</div>;
+        return ({ spy }) => {
+          return <div>{spy(x)}</div>;
         };
       });
 
@@ -321,10 +322,14 @@ describe("declare component", () => {
 
   describe("ctx", () => {
     const obj = {
-      ctx: null as RenderCtx | null,
+      ctx: null as any,
       Component: declareComponent(() => {
-        return ({ ctx }) => {
-          obj.ctx = ctx;
+        return ({ spy, component, reatomCtx }) => {
+          obj.ctx = {
+            spy,
+            component,
+            reatomCtx,
+          };
           return <></>;
         };
       }),
@@ -340,24 +345,9 @@ describe("declare component", () => {
       expect(obj.ctx?.component).toStrictEqual(expect.any(Function));
     });
 
-    test("get", () => {
+    test("reatomCtx", () => {
       customRender(<obj.Component />);
-      expect(obj.ctx?.get).toStrictEqual(expect.any(Function));
-    });
-
-    test("schedule", () => {
-      customRender(<obj.Component />);
-      expect(obj.ctx?.schedule).toStrictEqual(expect.any(Function));
-    });
-
-    test("subscribe", () => {
-      customRender(<obj.Component />);
-      expect(obj.ctx?.subscribe).toStrictEqual(expect.any(Function));
-    });
-
-    test("cause", () => {
-      customRender(<obj.Component />);
-      expect(obj.ctx?.cause).toStrictEqual(expect.any(Object));
+      expect(obj.ctx?.reatomCtx).toStrictEqual(expect.any(Object));
     });
   });
 });

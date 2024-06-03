@@ -22,9 +22,9 @@ describe("hooks", () => {
         return state;
       });
 
-      return ({ ctx }) => {
+      return ({ component }) => {
         countRender();
-        return <div>{ctx.component(number)}</div>;
+        return <div>{component(number)}</div>;
       };
     });
 
@@ -63,9 +63,9 @@ describe("hooks", () => {
 
       const number = wireHook(() => React.useContext(context));
 
-      return ({ ctx }) => {
+      return ({ component }) => {
         countRender();
-        return <div>{ctx.component(number)}</div>;
+        return <div>{component(number)}</div>;
       };
     });
 
@@ -112,9 +112,9 @@ describe("hooks", () => {
 
       const number = wireHook(({ spy }) => spy(testAtom));
 
-      return ({ ctx }) => {
+      return ({ component }) => {
         countRender();
-        return <div>{ctx.component(number)}</div>;
+        return <div>{component(number)}</div>;
       };
     });
 
@@ -158,9 +158,9 @@ describe("hooks", () => {
         return React.useMemo(() => v, [v]);
       });
 
-      return ({ ctx }) => {
+      return ({ component }) => {
         countRender();
-        return <div>{ctx.component(number)}</div>;
+        return <div>{component(number)}</div>;
       };
     });
 
@@ -203,7 +203,7 @@ describe("hooks", () => {
         }, [v]);
       });
 
-      return ({ ctx }) => {
+      return () => {
         countRender();
         return <div></div>;
       };
