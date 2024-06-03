@@ -24,7 +24,7 @@ export function createComponentsStore() {
 
           return unwrappedMapped(ctx.spy(anAtom));
         });
-        return ({ ctx }) => {
+        return () => {
           const [value] = useAtom(mappedAtom);
           return <>{value}</>;
         };
