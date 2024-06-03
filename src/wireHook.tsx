@@ -2,7 +2,7 @@ import { atom, Atom, AtomState, Ctx } from "@reatom/core";
 import { useCtx } from "@reatom/npm-react";
 import React from "react";
 
-type Arg = {
+export type Arg = {
   spy: <_, A extends Atom>(a: A) => AtomState<A>;
 };
 export type CallHook<T> = (arg: Arg) => T;

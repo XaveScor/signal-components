@@ -1,28 +1,28 @@
 import React from "react";
-import { Atom, AtomState, CtxSpy } from "@reatom/core";
+import { Atom, AtomState, Ctx, CtxSpy } from "@reatom/core";
 import { reatomComponent, useCtx } from "@reatom/npm-react";
-import { AnyF, InsideProps, OutsideProps } from "./types";
+import { InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
-import { CallHook, createWireHook } from "./wireHook";
+import { Arg, CallHook, createWireHook } from "./wireHook";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
-export type RenderCtx = CtxSpy & {
-  component: {
-    <
-      A extends Atom<string | number | boolean | null | undefined>,
-      B extends string | number | boolean | null | undefined,
-    >(
-      anAtom: A,
-      mapper: (value: AtomState<A>) => B,
-    ): React.ReactElement;
-    <A extends Atom<string | number | boolean | null | undefined>>(
-      anAtom: A,
-    ): React.ReactElement;
-  };
+type ComponentF = {
+  <
+    A extends Atom<string | number | boolean | null | undefined>,
+    B extends string | number | boolean | null | undefined,
+  >(
+    anAtom: A,
+    mapper: (value: AtomState<A>) => B,
+  ): React.ReactElement;
+  <A extends Atom<string | number | boolean | null | undefined>>(
+    anAtom: A,
+  ): React.ReactElement;
 };
 type RenderArg = {
-  ctx: RenderCtx;
+  reatomCtx: Ctx;
+  spy: Arg["spy"];
+  component: ComponentF;
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
 type ComponentArg<Props> = {
@@ -66,15 +66,11 @@ export function declareComponent<Props>(
           const componentsStore = createComponentsStore();
 
           const RenderPhase = reatomComponent(({ ctx }) => {
-            const renderCtx = React.useMemo(() => {
-              return {
-                ...ctx,
-                component: (atom: Atom, mapper?: AnyF) =>
-                  componentsStore.renderAtom(atom, mapper),
-              } as RenderCtx;
-            }, [ctx]);
-
-            return wrapped({ ctx: renderCtx });
+            return wrapped({
+              reatomCtx: ctx,
+              component: componentsStore.renderAtom,
+              spy: (anAtom) => ctx.spy(anAtom),
+            });
           });
 
           return <RenderPhase />;
