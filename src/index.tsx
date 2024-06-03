@@ -4,7 +4,7 @@ import { reatomComponent, useCtx } from "@reatom/npm-react";
 import { AnyF, InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
-import { createWireHook } from "./wireHook";
+import { CallHook, createWireHook } from "./wireHook";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 export type RenderCtx = CtxSpy & {
@@ -26,7 +26,7 @@ type RenderArg = {
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
 type ComponentArg<Props> = {
-  wireHook<T>(callhook: () => T): Atom<T>;
+  wireHook<T>(callhook: CallHook<T>): Atom<T>;
 };
 type Component<Props> = (
   props: InsideProps<Props>,
@@ -44,17 +44,20 @@ export function declareComponent<Props>(
       [],
     );
     setProps(props);
+    const [, setState] = React.useState(0);
+    const rerender = React.useCallback(() => setState((s) => s + 1), []);
 
-    const { wireHook, subscriptions } = React.useMemo(
-      () => createWireHook(rootCtx),
+    const { wireHook, rewireHooks, render } = React.useMemo(
+      () => createWireHook({ rerender, ctx: rootCtx }),
       [],
     );
     const firstRender = React.useRef<RenderF | null>(null);
     if (!firstRender.current) {
       firstRender.current = component(insideProps, { wireHook });
     } else {
-      subscriptions.forEach((sub) => sub());
+      render();
     }
+    React.useEffect(() => rewireHooks(), []);
     const wrapped = firstRender.current;
 
     const InitPhase = React.useMemo(
