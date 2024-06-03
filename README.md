@@ -49,6 +49,10 @@ const Component = declareComponent<Props>(({x, y}, options) => {
 - **Init phase** - This phase is called only once when the component is created. It's a good place to create atoms and functions.
 - **Render phase** - This phase is called every time the component is rendered. We delegate the rendering to React. It means you can use any React hooks and components inside the render phase.
 
+#### Init Phase
+You have access to the functions in the init phase via the second arg:
+- **wireHook**(callback: () => T): Atom\<T>. You can execute any React hooks code inside the callback. It is the good way to move to the reactive code.
+
 #### Render Phase
 You have access to the functions in the render phase:  
 - **ctx.spy** - This function is used to subscribe rerender to a received Atom. If value inside the Atom is changed, the React render call.

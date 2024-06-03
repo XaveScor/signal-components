@@ -4,6 +4,7 @@ import { reatomComponent, useCtx } from "@reatom/npm-react";
 import { AnyF, InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
+import { CallHook, createWireHook } from "./wireHook";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 export type RenderCtx = CtxSpy & {
@@ -24,7 +25,9 @@ type RenderArg = {
   ctx: RenderCtx;
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
-type ComponentArg<Props> = {};
+type ComponentArg<Props> = {
+  wireHook<T>(callhook: CallHook<T>): Atom<T>;
+};
 type Component<Props> = (
   props: InsideProps<Props>,
   arg: ComponentArg<Props>,
@@ -41,30 +44,45 @@ export function declareComponent<Props>(
       [],
     );
     setProps(props);
+    const [, setState] = React.useState(0);
+    const rerender = React.useCallback(() => setState((s) => s + 1), []);
 
-    const componentsStore = React.useMemo(() => createComponentsStore(), []);
+    const { wireHook, rewireHooks, render } = React.useMemo(
+      () => createWireHook({ rerender, ctx: rootCtx }),
+      [],
+    );
+    const firstRender = React.useRef<RenderF | null>(null);
+    if (!firstRender.current) {
+      firstRender.current = component(insideProps, { wireHook });
+    } else {
+      render();
+    }
+    React.useEffect(() => rewireHooks(), []);
+    const wrapped = firstRender.current;
 
-    const wrapped = React.useMemo(() => {
-      return component(insideProps, {});
-    }, []);
+    const InitPhase = React.useMemo(
+      () =>
+        React.memo(() => {
+          const componentsStore = createComponentsStore();
 
-    const Component = React.useMemo(() => {
-      return React.memo(
-        reatomComponent(({ ctx }) => {
-          const renderCtx = React.useMemo(() => {
-            return {
-              ...ctx,
-              component: (atom: Atom, mapper?: AnyF) =>
-                componentsStore.renderAtom(atom, mapper),
-            } as RenderCtx;
-          }, [ctx]);
+          const RenderPhase = reatomComponent(({ ctx }) => {
+            const renderCtx = React.useMemo(() => {
+              return {
+                ...ctx,
+                component: (atom: Atom, mapper?: AnyF) =>
+                  componentsStore.renderAtom(atom, mapper),
+              } as RenderCtx;
+            }, [ctx]);
 
-          return wrapped({ ctx: renderCtx });
+            return wrapped({ ctx: renderCtx });
+          });
+
+          return <RenderPhase />;
         }),
-      );
-    }, []);
+      [],
+    );
 
-    return <Component />;
+    return <InitPhase />;
   };
 }
 
