@@ -50,8 +50,7 @@ const Component = declareComponent<Props>(({x, y}, options) => {
 - **Render phase** - This phase is called every time the component is rendered. We delegate the rendering to React. It means you can use any React hooks and components inside the render phase.
 
 #### Init Phase
-You have access to the functions in the init phase via the second arg:
-- **wireHook**(callback: () => T): Atom\<T>. You can execute any React hooks code inside the callback. It is the good way to move to the reactive code.
+- global function **wireHook**(callback: () => T): Atom\<T>. You can execute any React hooks code inside the callback. It is the good way to move to the reactive code.
 
 #### Render Phase
 You have access to the functions in the render phase:  

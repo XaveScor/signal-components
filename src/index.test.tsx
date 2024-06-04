@@ -3,7 +3,6 @@ import { act, screen } from "@testing-library/react";
 import { declareComponent, defaults } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
-import { RenderCtx } from "../dist";
 
 // React recreate useMemo twice on mount in StrictMode
 const StrictModePenalty = 2;

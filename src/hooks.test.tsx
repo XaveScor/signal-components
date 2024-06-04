@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
-import { declareComponent } from "./index";
+import { declareComponent, wireHook } from "./index";
 import { customRender } from "./test-utils";
 import React from "react";
 import { atom } from "@reatom/core";
@@ -13,7 +13,7 @@ describe("hooks", () => {
     let innerSetState = (x: number) => {};
     const countInit = vi.fn();
     const countRender = vi.fn();
-    const Component = declareComponent((_, { wireHook }) => {
+    const Component = declareComponent(() => {
       countInit();
 
       const number = wireHook(() => {
@@ -58,7 +58,7 @@ describe("hooks", () => {
     const countInit = vi.fn();
     const countRender = vi.fn();
     const context = React.createContext(1);
-    const Component = declareComponent((_, { wireHook }) => {
+    const Component = declareComponent(() => {
       countInit();
 
       const number = wireHook(() => React.useContext(context));
@@ -107,7 +107,7 @@ describe("hooks", () => {
     const testAtom = atom(1);
     const countInit = vi.fn();
     const countRender = vi.fn();
-    const Component = declareComponent((_, { wireHook }) => {
+    const Component = declareComponent(() => {
       countInit();
 
       const number = wireHook(({ spy }) => spy(testAtom));
@@ -150,7 +150,7 @@ describe("hooks", () => {
     type Props = {
       x: number;
     };
-    const Component = declareComponent<Props>(({ x }, { wireHook }) => {
+    const Component = declareComponent<Props>(({ x }) => {
       countInit();
 
       const number = wireHook(({ spy }) => {
@@ -193,7 +193,7 @@ describe("hooks", () => {
     type Props = {
       x: number;
     };
-    const Component = declareComponent<Props>(({ x }, { wireHook }) => {
+    const Component = declareComponent<Props>(({ x }) => {
       countInit();
 
       wireHook(({ spy }) => {
