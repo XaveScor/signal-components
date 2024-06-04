@@ -4,7 +4,7 @@ import { reatomComponent, useCtx } from "@reatom/npm-react";
 import { InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
-import { Arg, CallHook, createWireHook } from "./wireHook";
+import { Arg, createWireHook } from "./wireHook";
 
 type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 type ComponentF = {
@@ -25,9 +25,7 @@ type RenderArg = {
   component: ComponentF;
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
-type ComponentArg<Props> = {
-  wireHook<T>(callhook: CallHook<T>): Atom<T>;
-};
+type ComponentArg<Props> = {};
 type Component<Props> = (
   props: InsideProps<Props>,
   arg: ComponentArg<Props>,
@@ -47,18 +45,21 @@ export function declareComponent<Props>(
     const [, setState] = React.useState(0);
     const rerender = React.useCallback(() => setState((s) => s + 1), []);
 
-    const { wireHook, rewireHooks, render } = React.useMemo(
+    const { rewireHooks, render, runWires } = React.useMemo(
       () => createWireHook({ rerender, ctx: rootCtx }),
       [],
     );
     const firstRender = React.useRef<RenderF | null>(null);
     if (!firstRender.current) {
-      firstRender.current = component(insideProps, { wireHook });
+      runWires(() => {
+        firstRender.current = component(insideProps, {});
+      });
     } else {
       render();
     }
     React.useEffect(() => rewireHooks(), []);
-    const wrapped = firstRender.current;
+    // because runWires is sync
+    const wrapped = firstRender.current!;
 
     const InitPhase = React.useMemo(
       () =>
@@ -84,3 +85,4 @@ export function declareComponent<Props>(
 
 export { defaults } from "./defaults";
 export { rest } from "./rest";
+export { wireHook } from "./wireHook";
