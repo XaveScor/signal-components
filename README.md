@@ -103,6 +103,18 @@ const Component = declareComponent<Props>((insideProps, options) => {
 });
 ```
 
+### getAllPropsSignal
+**getAllPropsSignal** is a way to get all props as a signal. It's useful when you start to rewrite your component.
+```tsx
+const Component = declareComponent<Props>((insideProps, options) => {
+  return ({spy}) => {
+    const unwrappedProps = spy(getAllPropsSignal(insideProps));
+    //...
+  };
+});
+```
+We recommend don't use this operator in your code, but it is useful for refactoring purposes
+
 ## Supported Reactivity Systems
 
 - [Reatom](https://reatom.dev)

@@ -1,5 +1,6 @@
 import { atom, Atom, AtomMut, Ctx, isAtom } from "@reatom/core";
-import { AnyF, InsideProps, OutsideProps } from "./types";
+import { AllPropsProp, AnyF, InsideProps, OutsideProps } from "./types";
+import { sAllProps } from "./specialProps";
 
 type UnsubscribeFn = () => void;
 const emptyUnsubscribe: UnsubscribeFn = () => {};
@@ -49,6 +50,32 @@ export function createPropsProxy<Props>(
 ): PropsProxy<Props> {
   const propsMap = new Map<string, MapElement>();
   let rawOutsideProps = outsideProps;
+  let allPropsAtom: Atom<AllPropsProp<Props>> | undefined = undefined;
+  const updateAllPropsAtom = atom(0);
+  function getAllPropsAtom() {
+    if (allPropsAtom) {
+      return allPropsAtom;
+    }
+
+    allPropsAtom = atom((ctx) => {
+      ctx.spy(updateAllPropsAtom);
+
+      const allProps = {} as AllPropsProp<Props>;
+      for (const [propName, el] of Object.entries(rawOutsideProps)) {
+        if (isAtom(el)) {
+          // @ts-ignore
+          allProps[propName] = ctx.spy(el);
+        } else {
+          // @ts-ignore
+          allProps[propName] = el;
+        }
+      }
+      return allProps;
+    });
+
+    return allPropsAtom;
+  }
+
   function get(p: string) {
     const el = propsMap.get(p);
     if (el) {
@@ -75,7 +102,14 @@ export function createPropsProxy<Props>(
   }
   return {
     insideProps: new Proxy({} as InsideProps<Props>, {
-      get(target: InsideProps<Props>, p: string, receiver: any) {
+      get(
+        target: InsideProps<Props>,
+        p: string | typeof sAllProps,
+        receiver: any,
+      ) {
+        if (p === sAllProps) {
+          return getAllPropsAtom();
+        }
         return get(p);
       },
       ownKeys(target: InsideProps<Props>): ArrayLike<string | symbol> {
@@ -109,6 +143,7 @@ export function createPropsProxy<Props>(
             break;
         }
       }
+      updateAllPropsAtom(ctx, (x) => x + 1);
     },
   };
 }
