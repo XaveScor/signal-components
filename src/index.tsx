@@ -86,3 +86,4 @@ export function declareComponent<Props>(
 export { defaults } from "./defaults";
 export { rest } from "./rest";
 export { wireHook } from "./wireHook";
+export { getAllPropsSignal } from "./getAllPropsSignal";

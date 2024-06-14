@@ -1,7 +1,8 @@
 import { describe, test, expect, vi, expectTypeOf } from "vitest";
-import { Atom, isAtom } from "@reatom/core";
+import { atom, Atom, isAtom } from "@reatom/core";
 import { createTestCtx } from "@reatom/testing";
 import { createPropsProxy } from "./innerProps";
+import { getAllPropsSignal } from "./getAllPropsSignal";
 
 describe("props", () => {
   describe("innerProps", () => {
@@ -131,6 +132,180 @@ describe("props", () => {
 
         expectTypeOf(insideProps.onChange).toMatchTypeOf<() => void>();
         expectTypeOf(insideProps.onChange).not.toBeUndefined();
+      });
+    });
+
+    describe("`allProps` prop", () => {
+      describe("type infer", () => {
+        test("should be Atom", () => {
+          const ctx = createTestCtx();
+          const { insideProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: 1,
+          });
+
+          expectTypeOf(getAllPropsSignal(insideProps)).toMatchTypeOf<
+            Atom<{ a: number }>
+          >();
+        });
+
+        test("primitive", () => {
+          const ctx = createTestCtx();
+          const { insideProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: 1,
+          });
+
+          expectTypeOf(getAllPropsSignal(insideProps)).toMatchTypeOf<
+            Atom<{ a: number }>
+          >();
+        });
+
+        test("atom", () => {
+          const ctx = createTestCtx();
+          const { insideProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: atom(1),
+          });
+
+          expectTypeOf(getAllPropsSignal(insideProps)).toMatchTypeOf<
+            Atom<{ a: number }>
+          >();
+        });
+      });
+
+      test("sAllProps should be Atom", () => {
+        const ctx = createTestCtx();
+        const { insideProps } = createPropsProxy<{
+          a: number;
+        }>(ctx, {
+          a: 1,
+        });
+
+        const x = getAllPropsSignal(insideProps);
+        expect(isAtom(getAllPropsSignal(insideProps))).toBeTruthy();
+        expectTypeOf(getAllPropsSignal(insideProps)).toMatchTypeOf<
+          Atom<{ a: number }>
+        >();
+      });
+
+      describe("should update", () => {
+        test("primitive => primitive", () => {
+          const ctx = createTestCtx();
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: 1,
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: 2 });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+
+        test("primitive => atom", () => {
+          const ctx = createTestCtx();
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: 1,
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: atom(2) });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+
+        test("atom => primitive", () => {
+          const ctx = createTestCtx();
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: atom(1),
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: 2 });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+
+        test("atom => atom", () => {
+          const ctx = createTestCtx();
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: atom(1),
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: atom(2) });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+
+        test("atom => primitive + change original atom", () => {
+          const ctx = createTestCtx();
+          const original = atom(1);
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: original,
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: 2 });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+
+          original(ctx, 3);
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+
+        test("atom => atom + change original atom", () => {
+          const ctx = createTestCtx();
+          const original = atom(1);
+          const { insideProps, setProps } = createPropsProxy<{
+            a: number;
+          }>(ctx, {
+            a: original,
+          });
+
+          const allProps = getAllPropsSignal(insideProps);
+          expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+          setProps({ a: atom(2) });
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+
+          original(ctx, 3);
+          expect(ctx.get(allProps)).toEqual({ a: 2 });
+        });
+      });
+
+      test("change atom", () => {
+        const ctx = createTestCtx();
+        const original = atom(1);
+        const { insideProps, setProps } = createPropsProxy<{
+          a: number;
+        }>(ctx, {
+          a: original,
+        });
+
+        const allProps = getAllPropsSignal(insideProps);
+        expect(ctx.get(allProps)).toEqual({ a: 1 });
+
+        original(ctx, 2);
+        expect(ctx.get(allProps)).toEqual({ a: 2 });
       });
     });
   });
