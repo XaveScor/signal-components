@@ -6,7 +6,7 @@ import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
 import { Arg, createWireHook } from "./wireHook";
 
-type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
+export type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 type ComponentF = {
   <
     A extends Atom<string | number | boolean | null | undefined>,

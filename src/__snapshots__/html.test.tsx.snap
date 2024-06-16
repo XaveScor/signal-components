@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`html > div 1`] = `
+<DocumentFragment>
+  <div>
+    1
+  </div>
+</DocumentFragment>
+`;
+
+exports[`html > div 2`] = `
+<DocumentFragment>
+  <div>
+    2
+  </div>
+</DocumentFragment>
+`;
+
+exports[`html > div 3`] = `
+<DocumentFragment>
+  <div>
+    10
+  </div>
+</DocumentFragment>
+`;
+
+exports[`html > span 1`] = `
+<DocumentFragment>
+  <span>
+    1
+  </span>
+</DocumentFragment>
+`;
+
+exports[`html > span 2`] = `
+<DocumentFragment>
+  <span>
+    2
+  </span>
+</DocumentFragment>
+`;
+
+exports[`html > span 3`] = `
+<DocumentFragment>
+  <span>
+    10
+  </span>
+</DocumentFragment>
+`;
