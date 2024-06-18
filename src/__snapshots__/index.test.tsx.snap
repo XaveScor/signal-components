@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`declare component > return jsx > base test 1`] = `
+<DocumentFragment>
+  <div>
+    1
+  </div>
+</DocumentFragment>
+`;
+
+exports[`declare component > return jsx > base test 2`] = `
+<DocumentFragment>
+  <div>
+    2
+  </div>
+</DocumentFragment>
+`;
