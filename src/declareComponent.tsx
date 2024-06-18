@@ -5,6 +5,7 @@ import { InsideProps, OutsideProps } from "./types";
 import { createPropsProxy } from "./innerProps";
 import { createComponentsStore } from "./componentsStore";
 import { Arg, createWireHook } from "./wireHook";
+import { createBindCtx } from "./bindCtx";
 
 export type ReturnComponent<Props> = React.FC<OutsideProps<Props>>;
 type ComponentF = {
@@ -50,10 +51,16 @@ export function declareComponent<Props>(
       () => createWireHook({ rerender, ctx: rootCtx }),
       [],
     );
+    const { runBinded } = React.useMemo(
+      () => createBindCtx({ ctx: rootCtx }),
+      [],
+    );
     const firstRender = React.useRef<ComponentReturnType | null>(null);
     if (!firstRender.current) {
-      runWires(() => {
-        firstRender.current = component(insideProps, {});
+      runBinded(() => {
+        runWires(() => {
+          firstRender.current = component(insideProps, {});
+        });
       });
     } else {
       render();
