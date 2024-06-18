@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@reatom/core": "^3.8.0",
+    "@reatom/lens": "^3.11.0",
     "@reatom/npm-react": "^3.8.6",
     "react": "^18.2.0"
   },

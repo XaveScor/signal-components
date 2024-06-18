@@ -11,6 +11,9 @@ importers:
       '@reatom/core':
         specifier: ^3.8.0
         version: 3.8.0
+      '@reatom/lens':
+        specifier: ^3.11.0
+        version: 3.11.0
       '@reatom/npm-react':
         specifier: ^3.8.6
         version: 3.8.6(react@18.3.1)
@@ -887,8 +890,8 @@ packages:
   '@reatom/hooks@3.5.3':
     resolution: {integrity: sha512-F5559hQ/Ju725qYWee5H0TlANVWx5goL0FE3zgyHPVUBjcZd3qoXosQcwDPNQldVo8dThjPr+LQj64qGdFW/Bw==}
 
-  '@reatom/lens@3.9.1':
-    resolution: {integrity: sha512-od3Ni2iMfxdjWp7CKtzZX7wA6/PQdJDnSut2uOqFgxaF+PGBao+tlV+RdVO5MoSoenZTSL7IUQw8YERXhAoViA==}
+  '@reatom/lens@3.11.0':
+    resolution: {integrity: sha512-DWUMFDG4bHTXwvVKxjCcL6BXfw1soiKLzGod7xNqi7cy9WgFbA/DntpUnU0tmPxUytvP07wsqkU3E3w5TXGPkg==}
 
   '@reatom/npm-react@3.8.6':
     resolution: {integrity: sha512-giZhUaVgEk+eS4pb2HEC3fAHgRTSUv9joBcpJDpmmoqXfC/KF7Ra/cMxhfvoNcaQMfVHBUM9AnVJI6swxV9ReA==}
@@ -897,6 +900,9 @@ packages:
 
   '@reatom/persist@3.3.0':
     resolution: {integrity: sha512-RM9PFxjwLje1FsMfBsborA9SyedsJIJVHqfuyoszLRv3J9SmTi4S2SJBd2EfZBbGF1hy0vwPncx1FYIHbgmU9g==}
+
+  '@reatom/primitives@3.7.0':
+    resolution: {integrity: sha512-KC2uFOoWhdexByGwxom1/Fx3UsY3pH4OUTJq9QKowS16jmdq9MnyqevFYGvmDUkB3R9MUt3uau87/9Qn4owBJA==}
 
   '@reatom/testing@3.4.5':
     resolution: {integrity: sha512-geN78H0D/7qr+th5Y4BKM3zJlFaMdYmN2TNCWN1qVrdPpditnd3E7vIjKZdOaE0CS0hydEs+CQzIuCg/H5Lrww==}
@@ -3878,17 +3884,18 @@ snapshots:
       '@reatom/effects': 3.7.3
       '@reatom/utils': 3.9.0
 
-  '@reatom/lens@3.9.1':
+  '@reatom/lens@3.11.0':
     dependencies:
       '@reatom/core': 3.8.0
       '@reatom/effects': 3.7.3
       '@reatom/hooks': 3.5.3
+      '@reatom/primitives': 3.7.0
       '@reatom/utils': 3.9.0
 
   '@reatom/npm-react@3.8.6(react@18.3.1)':
     dependencies:
       '@reatom/core': 3.8.0
-      '@reatom/lens': 3.9.1
+      '@reatom/lens': 3.11.0
       react: 18.3.1
       use-sync-external-store: 1.2.2(react@18.3.1)
 
@@ -3896,7 +3903,12 @@ snapshots:
     dependencies:
       '@reatom/core': 3.8.0
       '@reatom/hooks': 3.5.3
-      '@reatom/lens': 3.9.1
+      '@reatom/lens': 3.11.0
+      '@reatom/utils': 3.9.0
+
+  '@reatom/primitives@3.7.0':
+    dependencies:
+      '@reatom/core': 3.8.0
       '@reatom/utils': 3.9.0
 
   '@reatom/testing@3.4.5':
