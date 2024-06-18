@@ -5,3 +5,4 @@ export { wireHook } from "./wireHook";
 export { getAllPropsSignal } from "./getAllPropsSignal";
 export { wrap } from "./wrap";
 export { html } from "./html";
+export { bindCtx } from "./bindCtx";
