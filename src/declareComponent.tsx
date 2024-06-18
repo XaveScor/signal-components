@@ -26,10 +26,11 @@ type RenderArg = {
 };
 type RenderF = (arg: RenderArg) => React.ReactElement;
 type ComponentArg<Props> = {};
+type ComponentReturnType = RenderF | React.JSX.Element;
 type Component<Props> = (
   props: InsideProps<Props>,
   arg: ComponentArg<Props>,
-) => RenderF;
+) => ComponentReturnType;
 
 export function declareComponent<Props>(
   component: Component<Props>,
@@ -49,7 +50,7 @@ export function declareComponent<Props>(
       () => createWireHook({ rerender, ctx: rootCtx }),
       [],
     );
-    const firstRender = React.useRef<RenderF | null>(null);
+    const firstRender = React.useRef<ComponentReturnType | null>(null);
     if (!firstRender.current) {
       runWires(() => {
         firstRender.current = component(insideProps, {});
@@ -60,6 +61,10 @@ export function declareComponent<Props>(
     React.useEffect(() => rewireHooks(), []);
     // because runWires is sync
     const wrapped = firstRender.current!;
+
+    if (typeof wrapped !== "function") {
+      return wrapped;
+    }
 
     const InitPhase = React.useMemo(
       () =>

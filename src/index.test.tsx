@@ -1,6 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
 import { act, screen } from "@testing-library/react";
-import { declareComponent, defaults } from "./index";
+import { declareComponent, defaults, html } from "./index";
 import { atom } from "@reatom/core";
 import { customRender } from "./test-utils";
 
@@ -347,6 +347,19 @@ describe("declare component", () => {
     test("reatomCtx", () => {
       customRender(<obj.Component />);
       expect(obj.ctx?.reatomCtx).toStrictEqual(expect.any(Object));
+    });
+  });
+
+  describe("return jsx", () => {
+    const Component = declareComponent<{ x: number }>(({ x }) => {
+      return <html.div>{x}</html.div>;
+    });
+
+    test("base test", () => {
+      const { rendered } = customRender(<Component x={1} />);
+      expect(rendered.asFragment()).toMatchSnapshot();
+      rendered.rerender(<Component x={2} />);
+      expect(rendered.asFragment()).toMatchSnapshot();
     });
   });
 });
