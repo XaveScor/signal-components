@@ -133,6 +133,19 @@ describe("props", () => {
         expectTypeOf(insideProps.onChange).toMatchTypeOf<() => void>();
         expectTypeOf(insideProps.onChange).not.toBeUndefined();
       });
+
+      test("or undefined", () => {
+        const ctx = createTestCtx();
+        const { insideProps } = createPropsProxy<{
+          onChange: (() => void) | undefined;
+        }>(ctx, { onChange: undefined });
+
+        expect(insideProps.onChange).toStrictEqual(expect.any(Function));
+        expect(() => insideProps.onChange()).not.toThrow();
+
+        expectTypeOf(insideProps.onChange).toMatchTypeOf<() => void>();
+        expectTypeOf(insideProps.onChange).not.toBeUndefined();
+      });
     });
 
     describe("`allProps` prop", () => {
@@ -306,6 +319,35 @@ describe("props", () => {
 
         original(ctx, 2);
         expect(ctx.get(allProps)).toEqual({ a: 2 });
+      });
+    });
+  });
+
+  describe("outsideProps", () => {
+    describe("stable functions", () => {
+      test("undefined type", () => {
+        const ctx = createTestCtx();
+        const { insideProps, setProps } = createPropsProxy<{
+          onClick: undefined;
+        }>(ctx, { onClick: undefined });
+
+        expectTypeOf(insideProps.onClick).toMatchTypeOf<() => void>();
+        expectTypeOf(setProps)
+          .parameter(0)
+          .toMatchTypeOf<{ onClick: undefined }>();
+      });
+
+      test("or undefined type", () => {
+        const ctx = createTestCtx();
+        const { insideProps, setProps } = createPropsProxy<{
+          onClick: undefined | ((x: number) => void);
+        }>(ctx, { onClick: undefined });
+
+        expectTypeOf(insideProps.onClick).toMatchTypeOf<(x: number) => void>();
+        expectTypeOf(setProps)
+          .parameter(0)
+          .toHaveProperty("onClick")
+          .toMatchTypeOf<undefined | ((x: number) => void)>();
       });
     });
   });
