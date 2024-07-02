@@ -9,9 +9,9 @@ type CalculateProp<F> = F extends AnyF
 type CalculateOptionalProp<F> = CalculateProp<NonNullable<F>>;
 
 type FilterFunctions<Props> = {
-  [K in keyof Props]-?: CalculateOptionalProp<Props[K]>;
+  [K in keyof Props]: CalculateOptionalProp<Props[K]>;
 };
 
-export type OnFunctionsProps<Props> = FilterFunctions<
+export type OnFunctionsOutsideProps<Props> = FilterFunctions<
   SplitPropsByName<Props>["onFunctions"]
 >;
