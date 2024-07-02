@@ -1,11 +1,14 @@
 import { AnyF } from "./AnyF";
+import { SplitPropsByName } from "./SplitPropsByName";
 
-export type OnFunctionsProps<Props> = {
-  [K in keyof Props as K extends `on${Capitalize<infer T>}`
-    ? K
-    : never]: Props[K] extends AnyF
+type FilterFunctions<Props> = {
+  [K in keyof Props]: Props[K] extends AnyF
     ? void extends ReturnType<Props[K]>
       ? Props[K]
       : never
     : never;
 };
+
+export type OnFunctionsProps<Props> = FilterFunctions<
+  SplitPropsByName<Props>["onFunctions"]
+>;
