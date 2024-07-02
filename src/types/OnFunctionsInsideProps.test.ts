@@ -32,6 +32,15 @@ describe("types", () => {
       expectTypeOf<Result>().toHaveProperty("onClick").not.toBeUndefined();
     });
 
+    test("cannot be undefined", () => {
+      type Obj = {
+        onClick: undefined;
+      };
+      type Result = OnFunctionInsideProps<Obj>;
+
+      expectTypeOf<Result>().toHaveProperty("onClick").toBeNever();
+    });
+
     test("on should be a function", () => {
       type Obj = {
         onClick: number;
