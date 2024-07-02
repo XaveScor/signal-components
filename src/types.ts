@@ -1,17 +1,12 @@
 import { Atom, AtomState } from "@reatom/core";
 import { sAllProps } from "./specialProps";
 import type { OnFunctionsProps } from "./types/OnFunctionProps";
+import { ConvertToAtom } from "./types/ConvertToAtom";
+import { RawInsideProps } from "./types/RawInsideProps";
 
 export type { AnyF } from "./types/AnyF";
 
-type ConvertToAtom<T> = T extends Atom ? T : Atom<T>;
-
-type RawInsideProps<Props> = {
-  [K in keyof Props]: NonNullable<ConvertToAtom<Props[K]>>;
-};
-
-type _InsideProps<Props> = OnFunctionsProps<Props> &
-  RawInsideProps<Omit<Props, keyof OnFunctionsProps<Props>>>;
+type _InsideProps<Props> = OnFunctionsProps<Props> & RawInsideProps<Props>;
 type RequiredInsideProps<Props> = _InsideProps<Required<Props>>;
 
 type UnwrapAtoms<T> = Atom<{
