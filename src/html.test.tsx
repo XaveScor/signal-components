@@ -46,7 +46,7 @@ describe("html", () => {
       type ButtonProps = ComponentProps<typeof html.button>;
 
       expectTypeOf<NonNullable<ButtonProps["onClick"]>>().toMatchTypeOf<
-        () => void
+        (e: React.MouseEvent<HTMLButtonElement>) => void
       >();
     });
 
@@ -63,14 +63,18 @@ describe("html", () => {
       type Component = ReturnComponent<JSX.IntrinsicElements["button"]>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for JSX.IntrinsicElements", () => {
       type Component = ReturnComponent<JSX.IntrinsicElements["button"]>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for JSX.IntrinsicElements['onclick']", () => {
@@ -79,7 +83,9 @@ describe("html", () => {
       }>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for JSX.IntrinsicElements['onclick']", () => {
@@ -88,7 +94,9 @@ describe("html", () => {
       }>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for ButtonHTMLAttributes", () => {
@@ -97,7 +105,9 @@ describe("html", () => {
       }>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for MouseEventHandler", () => {
@@ -106,7 +116,9 @@ describe("html", () => {
       }>;
       type Props = ComponentProps<Component>;
 
-      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<() => void>();
+      expectTypeOf<NonNullable<Props["onClick"]>>().toMatchTypeOf<
+        (e: React.MouseEvent<HTMLButtonElement>) => void
+      >();
     });
 
     test("ReturnComponent should infer right on* type for bivarianceHack", () => {
