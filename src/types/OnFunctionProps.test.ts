@@ -25,9 +25,7 @@ describe("types", () => {
         onClick?: F;
       };
       type Result = OnFunctionsProps<Obj>;
-      expectTypeOf<Result>()
-        .toHaveProperty("onClick")
-        .toMatchTypeOf<F | undefined>();
+      expectTypeOf<Result>().toHaveProperty("onClick").toMatchTypeOf<F>();
     });
 
     test("on should be a function", () => {

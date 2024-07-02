@@ -1,12 +1,15 @@
 import { AnyF } from "./AnyF";
 import { SplitPropsByName } from "./SplitPropsByName";
 
+type CalculateProp<F> = F extends AnyF
+  ? void extends ReturnType<F>
+    ? F
+    : never
+  : never;
+type CalculateOptionalProp<F> = CalculateProp<NonNullable<F>>;
+
 type FilterFunctions<Props> = {
-  [K in keyof Props]: Props[K] extends AnyF
-    ? void extends ReturnType<Props[K]>
-      ? Props[K]
-      : never
-    : never;
+  [K in keyof Props]-?: CalculateOptionalProp<Props[K]>;
 };
 
 export type OnFunctionsProps<Props> = FilterFunctions<
