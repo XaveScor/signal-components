@@ -1,21 +1,13 @@
-import { Atom, AtomState } from "@reatom/core";
+import { AtomState } from "@reatom/core";
 import { sAllProps } from "./specialProps";
 import type { OnFunctionsOutsideProps } from "./types/OnFunctionsOutsideProps";
-import type { OnFunctionInsideProps } from "./types/OnFunctionInsideProps";
 import { ConvertToAtom } from "./types/ConvertToAtom";
-import { RawInsideProps } from "./types/RawInsideProps";
+import { InsideAtomProps } from "./types/InsideAtomProps";
+import { AllPropsProp } from "./types/AllPropsProp";
 
 export type { AnyF } from "./types/AnyF";
 
-type RequiredInsideProps<Props> = OnFunctionInsideProps<Props> &
-  RawInsideProps<Props>;
-
-type UnwrapAtoms<T> = Atom<{
-  [K in keyof T]: T[K] extends Atom ? AtomState<T[K]> : T[K];
-}>;
-
-export type AllPropsProp<Props> = UnwrapAtoms<RequiredInsideProps<Props>>;
-export type InsideProps<Props> = RequiredInsideProps<Props> & {
+export type InsideProps<Props> = InsideAtomProps<Props> & {
   [sAllProps]: AllPropsProp<Props>;
 };
 
