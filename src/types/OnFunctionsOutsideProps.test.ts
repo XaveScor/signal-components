@@ -21,6 +21,14 @@ describe("types", () => {
       expectTypeOf<Result>().toHaveProperty("onClick").toBeNever();
     });
 
+    test("function should return ONLY void", () => {
+      type Obj = {
+        onClick: () => number | void;
+      };
+      type Result = OnFunctionsOutsideProps<Obj>;
+      expectTypeOf<Result>().toHaveProperty("onClick").toBeNever();
+    });
+
     test("cannot be undefined", () => {
       type Obj = {
         onClick: undefined;

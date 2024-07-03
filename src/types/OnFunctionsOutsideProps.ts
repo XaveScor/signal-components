@@ -1,8 +1,9 @@
 import { AnyF } from "./AnyF";
 import { SplitPropsByName } from "./SplitPropsByName";
+import { IsExact } from "./IsExact";
 
 type CalculateProp<F> = F extends AnyF
-  ? void extends ReturnType<F>
+  ? IsExact<ReturnType<F>, void> extends true
     ? F
     : never
   : never;
