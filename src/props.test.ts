@@ -309,4 +309,21 @@ describe("props", () => {
       });
     });
   });
+
+  describe("outsideProps", () => {
+    describe("stable functions", () => {
+      test("optional", () => {
+        const ctx = createTestCtx();
+        const { insideProps, setProps } = createPropsProxy<{
+          onClick?: (x: number) => void;
+        }>(ctx, { onClick: undefined });
+
+        expectTypeOf(insideProps.onClick).toMatchTypeOf<(x: number) => void>();
+        expectTypeOf(setProps)
+          .parameter(0)
+          .toHaveProperty("onClick")
+          .toMatchTypeOf<undefined | ((x: number) => void)>();
+      });
+    });
+  });
 });

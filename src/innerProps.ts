@@ -1,6 +1,7 @@
 import { atom, Atom, AtomMut, Ctx, isAtom } from "@reatom/core";
-import { AllPropsProp, AnyF, InsideProps, OutsideProps } from "./types";
+import { AnyF, InsideProps, OutsideProps } from "./types";
 import { sAllProps } from "./specialProps";
+import { AllPropsProp } from "./types/AllPropsProp";
 
 type UnsubscribeFn = () => void;
 const emptyUnsubscribe: UnsubscribeFn = () => {};

@@ -2,7 +2,7 @@ import React from "react";
 import { atom, Atom } from "@reatom/core";
 import { useAtom } from "@reatom/npm-react";
 import { AnyF, OutsideProps } from "./types";
-import { declareComponent } from "./index";
+import { declareComponent } from "./declareComponent";
 
 type CtxComponentProps = { m?: AnyF };
 
